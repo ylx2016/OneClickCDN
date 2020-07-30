@@ -12,25 +12,25 @@
 #################################################################
 
 
-#You can change the Traffic Server source file download link here.
-#Check https://www.apache.org/dyn/closer.cgi/trafficserver for the latest stable version.
+#您可以在这里修改Traffic Server源码下载链接。
+#查看https://www.apache.org/dyn/closer.cgi/trafficserver获取最新版本链接。
 
 TS_DOWNLOAD_LINK="https://mirrors.ocf.berkeley.edu/apache/trafficserver/trafficserver-8.0.8.tar.bz2"
 TS_VERSION="8.0.8"
 
 
 
-#You can enable an experimental feature: reverse proxy for any website.
-#Please note that this feature is kind of buggy; you might have to manually modify some mapping rules if necessary.
-#If you wish to turn on this feature, set the value for the variable below to ON, and use the special key in the main function to add reverse proxy instances.
+#您可以开启实验性的功能： 反代其他网站。
+#该功能目前仍有问题，您可能需要手动调试。
+#如果您希望启用该功能，可以将下面变量的值设为ON, 然后在主菜单中输入特殊值, 添加反代实例。
 
 REVERSE_PROXY_MODE_ENABLED=OFF
 
 
 
-#By default, this script only works on Ubuntu 20, Debian 10, and CentOS 7/8.
-#You can disable the OS check switch below and tweak the code yourself to try to install it in other OS versions.
-#Please do note that if you choose to use this script on OS other than Ubuntu 20, Debian 10, or CentOS 7/8, you might mess up your OS.  Please keep a backup of your server before installation.
+#默认条件下，此脚本仅支持Ubuntu 20, Debian 10, 以及CentOS 7/8.
+#您可以在下面关闭OS检查开关，然后自行修改代码以在其它系统上安装。
+#请注意，如果您试图在其他系统上安装，将可能导致不可预知的错误。请注意备份。
 
 OS_CHECK_ENABLED=ON
 
@@ -53,9 +53,9 @@ function check_OS
 		if [ $? = 0 ]
 		then
 			OS=UBUNTU18
-			echo "Support of Ubuntu 18 is experimental.  You may get error in TLS handshakes."
+			echo "在Ubuntu 18系统上使用本脚本可能会遇到TLS握手错误。"
 			echo "Please consider upgrading to Ubuntu 20 (simply run \"do-release-upgrade -d\")."
-			echo "Please tweak the OS_CHECK_ENABLED setting if you still wish to install on Ubuntu 18."
+			echo "如果您仍希望在Ubuntu 18上安装，请修改OS_CHECK_ENABLED开关的值。"
 			echo 
 			exit 1
 		else
@@ -64,7 +64,7 @@ function check_OS
 			then
 				OS=UBUNTU20
 			else
-				say "Sorry, this script only supports Ubuntu 20 and Debian 10." red
+				say "很抱歉，改脚本仅支持Ubuntu 20, Debian 10与CentOS 7/8." red
 				echo 
 				exit 1
 			fi
@@ -73,18 +73,18 @@ function check_OS
 		cat /etc/debian_version | grep "^10." >/dev/null
 		if [ $? = 0 ] ; then
 			OS=DEBIAN10
-			echo "Support of Debian 10 is experimental.  Please report bugs."
+			echo "本脚本仅实验性地支持Debian 10, 如有bug欢迎汇报。"
 			echo 
 		else
 			cat /etc/debian_version | grep "^9." >/dev/null
 			if [ $? = 0 ] ; then
 				OS=DEBIAN9
-				echo "Support of Debian 9 is experimental.  You may get error in TLS handshakes."
-				echo "Please tweak the OS_CHECK_ENABLED setting if you still wish to install on Debian 9."
+				echo "本脚本仅实验性地支持Debian 9. 您可能会遇到TLS握手错误。"
+				echo "如果您仍希望在Debian 9上安装，请修改OS_CHECK_ENABLED开关的值。"
 				echo 
 				exit 1
 			else
-				say "Sorry, this script only supports Ubuntu 20 and Debian 10." red
+				say "很抱歉，改脚本仅支持Ubuntu 20, Debian 10与CentOS 7/8." red
 				echo 
 				exit 1
 			fi
@@ -93,24 +93,24 @@ function check_OS
 		cat /etc/redhat-release | grep " 8." >/dev/null
 		if [ $? = 0 ] ; then
 			OS=CENTOS8
-			echo "Support of CentOS 8 is experimental.  Please report bugs."
-			echo "Please try disabling selinux or firewalld if you cannot visit your website."
+			echo "本脚本仅实验性地支持CentOS 8, 如有bug欢迎汇报。"
+			echo "如果您无法访问您的网站，请尝试禁用selinux或firewalld."
 			echo 
 		else
 			cat /etc/redhat-release | grep " 7." >/dev/null
 			if [ $? = 0 ] ; then
 				OS=CENTOS7
-				echo "Support of CentOS 7 is experimental.  Please report bugs."
-				echo "Please try disabling selinux or firewalld if you cannot visit your website."
+				echo "本脚本仅实验性地支持CentOS 7, 如有bug欢迎汇报。"
+				echo "如果您无法访问您的网站，请尝试禁用selinux或firewalld."
 				echo 
 			else
-				echo "Sorry, this script only supports Ubuntu 20, Debian 10, and CentOS 7/8."
+				echo "很抱歉，此脚本仅支持Ubuntu 20, Debian 10, CentOS 7/8."
 				echo
 				exit 1
 			fi
 		fi
 	else
-		echo "Sorry, this script only supports Ubuntu 20, Debian 10, and CentOS 7/8."
+		echo "很抱歉，此脚本仅支持Ubuntu 20, Debian 10, CentOS 7/8."
 		echo 
 		exit 1
 	fi
@@ -128,30 +128,30 @@ function check_TS
 
 function install_TS
 {
-	say @B"Starting Traffic Server installation..." green
+	say @B"开始Traffic Server安装..." green
 	echo "..."
 	echo "..."
-	echo "Removing Nginx and Apache..."
+	echo "移除Nginx与Apache..."
 	apt-get remove nginx apache -y
-	echo "Installing depedencies..."
+	echo "安装依赖环境..."
 	apt-get update && apt-get upgrade -y
 	apt-get install wget curl tar certbot automake libtool pkg-config libmodule-install-perl gcc g++ libssl-dev tcl-dev libpcre3-dev libcap-dev libhwloc-dev libncurses5-dev libcurl4-openssl-dev flex autotools-dev bison debhelper dh-apparmor gettext intltool-debian libbison-dev libexpat1-dev libfl-dev libsigsegv2 libsqlite3-dev m4 po-debconf tcl8.6-dev zlib1g-dev -y
 	wget $TS_DOWNLOAD_LINK
 	tar xjf trafficserver-${TS_VERSION}.tar.bz2
 	rm -f trafficserver-${TS_VERSION}.tar.bz2
 	cd ${current_dir}/trafficserver-${TS_VERSION}
-	echo "Start building Traffic Server from source..."
+	echo "开始从源文件编译Traffic Server..."
 	./configure --enable-experimental-plugins
 	if [ -f ${current_dir}/trafficserver-${TS_VERSION}/config.status ] ; then
-		say @B"Dependencies met!" green
-		say @B"Compiling now..." green
+		say @B"依赖环境满足条件！" green
+		say @B"开始编译..." green
 		echo
 	else
 		echo 
-		say "Missing dependencies." red
-		echo "Please check log, install required dependencies, and run this script again."
-		echo "Please also consider to report your log here https://github.com/Har-Kuun/OneClickCDN/issues so that I can fix this issue."
-		echo "Thank you!"
+		say "依赖环境缺失。" red
+		echo "请核查日志，安装缺失的依赖环境，然后再次运行此脚本。"
+		echo "您也可以在这里https://github.com/Har-Kuun/OneClickCDN/issues报告此问题并贴出您的报错日志，以便我改进此脚本。"
+		echo "感谢！"
 		echo 
 		exit 1
 	fi
@@ -159,14 +159,14 @@ function install_TS
 	make install
 	if [ -f /usr/local/bin/traffic_manager ] ; then
 		echo 
-		say @B"Traffic Server successfully installed!" green
+		say @B"Traffic Server 安装成功！" green
 		echo
 	else
 		echo
-		say "Traffic Server installation failed." red
-		echo "Please check the above log for reasons."
-		echo "Please also consider to report your log here https://github.com/Har-Kuun/OneClickCDN/issues so that I can fix this issue."
-		echo "Thank you!"
+		say "Traffic Server 安装失败。" red
+		echo "请检查上面的日志报错信息。"
+		echo "您也可以在这里https://github.com/Har-Kuun/OneClickCDN/issues报告此问题并贴出您的报错日志，以便我改进此脚本。"
+		echo "感谢！"
 		echo
 		exit 1
 	fi
@@ -178,7 +178,7 @@ function install_TS
 	ldconfig
 	trafficserver start
 	echo 
-	say @B"Traffic Server successfully started!" green
+	say @B"Traffic Server 启动成功！" green
 	echo "Domain		Type(CDN/RevProxy)		OriginIP" > /etc/trafficserver/hostsavailable.sun
 #	echo "trafficserver start" >> /etc/rc.local
 	run_on_startup
@@ -187,12 +187,12 @@ function install_TS
 
 function install_TS_CentOS
 {
-	say @B"Starting Traffic Server installation..." green
+	say @B"开始Traffic Server安装..." green
 	echo "..."
 	echo "..."
-	echo "Removing Nginx and Apache..."
+	echo "移除Nginx与Apache..."
 	yum remove httpd nginx -y
-	echo "Installing depedencies..."
+	echo "安装依赖环境..."
 	yum update -y
 	if [ "x$OS" = "xCENTOS7" ] ; then
 		yum install centos-release-scl -y
@@ -213,18 +213,18 @@ function install_TS_CentOS
 	tar xjf trafficserver-${TS_VERSION}.tar.bz2
 	rm -f trafficserver-${TS_VERSION}.tar.bz2
 	cd ${current_dir}/trafficserver-${TS_VERSION}
-	echo "Start building Traffic Server from source..."
+	echo "开始从源文件编译Traffic Server..."
 	./configure --enable-experimental-plugins
 	if [ -f ${current_dir}/trafficserver-${TS_VERSION}/config.status ] ; then
-		say @B"Dependencies met!" green
-		say @B"Compiling now..." green
+		say @B"依赖环境满足条件！" green
+		say @B"开始编译..." green
 		echo
 	else
 		echo 
-		say "Missing dependencies." red
-		echo "Please check log, install required dependencies, and run this script again."
-		echo "Please also consider to report your log here https://github.com/Har-Kuun/OneClickCDN/issues so that I can fix this issue."
-		echo "Thank you!"
+		say "依赖环境缺失。" red
+		echo "请核查日志，安装缺失的依赖环境，然后再次运行此脚本。"
+		echo "您也可以在这里https://github.com/Har-Kuun/OneClickCDN/issues报告此问题并贴出您的报错日志，以便我改进此脚本。"
+		echo "感谢！"
 		echo 
 		exit 1
 	fi
@@ -232,14 +232,14 @@ function install_TS_CentOS
 	make install
 	if [ -f /usr/local/bin/traffic_manager ] ; then
 		echo 
-		say @B"Traffic Server successfully installed!" green
+		say @B"Traffic Server 安装成功！" green
 		echo
 	else
 		echo
-		say "Traffic Server installation failed." red
-		echo "Please check the above log for reasons."
-		echo "Please also consider to report your log here https://github.com/Har-Kuun/OneClickCDN/issues so that I can fix this issue."
-		echo "Thank you!"
+		say "Traffic Server 安装失败。" red
+		echo "请检查上面的日志报错信息。"
+		echo "您也可以在这里https://github.com/Har-Kuun/OneClickCDN/issues报告此问题并贴出您的报错日志，以便我改进此脚本。"
+		echo "感谢！"
 		echo
 		exit 1
 	fi
@@ -251,7 +251,7 @@ function install_TS_CentOS
 	ldconfig
 	trafficserver start
 	echo 
-	say @B"Traffic Server successfully started!" green
+	say @B"Traffic Server 启动成功！" green
 	echo "Domain		Type(CDN/RevProxy)		OriginIP" > /etc/trafficserver/hostsavailable.sun
 	run_on_startup
 	echo 
@@ -377,14 +377,14 @@ function config_cache_storage
 	do
 		ram_cache_size=
 		echo 
-		echo "Please specify RAM cache size."
-		echo "The unit is MB.  Please type an integer only."
-		echo "The recommended value is 200 per GB of RAM on your server."
+		echo "请输入内存缓存大小。"
+		echo "单位为M. 请输入一个整数值。"
+		echo "推荐值为200M每GB内存。"
 		echo 
 		read ram_cache_size
 		re='^[0-9]+$'
 		if ! [[ ${ram_cache_size} =~ $re ]] ; then
-			say @B"Please type an integer only." yellow
+			say @B"请仅输入一个证书。" yellow
 		else
 			valid_integer=1
 		fi
@@ -393,7 +393,7 @@ function config_cache_storage
                 ram_cache_size=50
         fi
 	echo 
-	say @B"RAM cache size set to ${ram_cache_size}M." green
+	say @B"RAM缓存值已设置为 ${ram_cache_size}M." green
 	echo 
 	echo "CONFIG proxy.config.cache.ram_cache.size INT ${ram_cache_size}M" >> /etc/trafficserver/records.config
 
@@ -402,9 +402,9 @@ function config_cache_storage
 	do
 		disk_cache_size=
 		echo 
-		echo "Please specify disk cache size."
-		echo "The unit is MB.  Please type an integer only."
-		echo "The recommended value is at least 2048."
+		echo "请输入磁盘缓存大小。"
+		echo "单位为M. 请输入一个整数值。"
+		echo "推荐值为至少2048M."
 		echo 
 		read disk_cache_size
 		if ! [[ ${disk_cache_size} =~ $re ]] ; then
@@ -415,12 +415,12 @@ function config_cache_storage
 	done
 	if [ $disk_cache_size -gt 256 ] ; then
 		echo 
-		say @B"Disk cache size set to ${disk_cache_size}M." green
+		say @B"磁盘缓存已设置为 ${disk_cache_size}M." green
 		echo 
 		echo "var/trafficserver ${disk_cache_size}M" > /etc/trafficserver/storage.config
 	else
 		echo 
-		say @B"Disk cache size set to 256M." green
+		say @B"磁盘缓存已设置为 256M." green
 		echo 
 	fi
 }
@@ -428,13 +428,13 @@ function config_cache_storage
 function config_cache_partitioning
 {
 	echo 
-	echo "Performing disk cache partitioning..."
+	echo "正在为磁盘缓存分区..."
 	for i in 1 2 3 4
 	do
 		echo "volume=${i} scheme=http size=25%" >> /etc/trafficserver/volume.config
 	done
 	echo "hostname=* volume=1,2,3,4" > /etc/trafficserver/hosting.config
-	say @B"Disk cache partitioned." green
+	say @B"磁盘缓存分区成功。" green
 	echo 
 }
 
@@ -442,8 +442,8 @@ function config_cache_dynamic_content
 {
 	echo
 	echo "CONFIG proxy.config.http.cache.cache_urls_that_look_dynamic INT 1" >> /etc/trafficserver/records.config
-	say @B"Cache rules updated!" green
-	say @B"Traffic Server will cache dynamic content." green
+	say @B"已更新缓存规则!" green
+	say @B"Traffic Server将缓存动态内容。" green
 	echo 
 }
 
@@ -468,25 +468,25 @@ function config_mapping_cdn
 	origin_scheme=$3
 	origin_port=$4
 	echo 
-	echo "Adding mapping rules for ${cdn_hostname}..."
+	echo "为${cdn_hostname}添加映射规则..."
 	if [ "$origin_scheme" = "https" ] ; then
 		echo "redirect http://${cdn_hostname}/ https://${cdn_hostname}/" >> /etc/trafficserver/remap.config
 	fi
 	echo "map https://${cdn_hostname}/ ${origin_scheme}://${origin_ip}:${origin_port}/" >> /etc/trafficserver/remap.config
-	say @B"2 rules added." green
+	say @B"已添加2条规则。" green
 	echo 
 }
 
 function add_reverse_proxy
 {
 	echo 
-	echo "Please specify your proxy domain name (e.g., proxy.example.com):"
+	echo "请输入 your proxy domain name (e.g., proxy.example.com):"
 	read proxy_hostname_add
-	echo "Please specify the origin website domain name (e.g., origin.example.com):"
+	echo "请输入源站域名(比如origin.example.com):"
 	read origin_hostname_add
-	echo "Please specify the origin website IP address (e.g., 88.88.88.88).  If it has multiple IPs, any would work:"
+	echo "请输入源站IP地址。如果源站有多个IP地址，可以填任意一个。"
 	read origin_ip_add
-	echo "Is the origin website using HTTPS or HTTP?  Type 1 for HTTPS, or 2 for HTTP.  If both works, then either is fine:"
+	echo "源站是否启用SSL？如果是HTTPS, 请输入1; 如果是HTTP, 请输入2."
 	read isHTTPS
 	if [ $isHTTPS = 1 ] ; then
 		config_mapping_reverse_proxy $proxy_hostname_add $origin_hostname_add https
@@ -494,13 +494,13 @@ function add_reverse_proxy
 		config_mapping_reverse_proxy $proxy_hostname_add $origin_hostname_add http
 	fi
 	echo "${proxy_hostname_add}		RevProxy		${origin_hostname_add}" >> /etc/trafficserver/hostsavailable.sun
-	echo "Would you like to configure SSL certificates for domain name ${proxy_hostname_add} now?"
-	echo "We can set up SSL with your own certificates, or can issue a free Let's Encrypt SSL certificate for you, if you have already pointed your domain to this server."
-	echo "How would you like to proceed?"
-	echo "1: I know the absolute path to my certificate files (private key, certificate, CA chain (optional))."
-	echo "2: I have pointed my domain name to this server, and I want a free Let's Encrypt certificate."
-	echo "3: I forgot the path to my certificate files, so I need to go back to SSH and find them; or I do not need SSL certificate for this domain."
-	echo "Please select 1, 2, or 3:"
+	echo "请问您是否想现在为域名${proxy_hostname_add}配置SSL证书？"
+	echo "您可以提供您自己的证书；如果您已经将域名指向了该服务器的IP地址，您也可以一键生成免费的Let's Encrypt SSL证书。"
+	echo "请输入您的选项。"
+	echo "1: 我知道我的证书文件的路径（私钥，证书，CA中间链证书（可选）），我想提供我自己的证书。"
+	echo "2: 我已经将我的域名指向了该服务器的IP, 我想生成免费的Let's Encrypt证书。"
+	echo "3: 我不记得证书文件放在哪儿了，得去找找；或者我暂时不想为该域名设置SSL."
+	echo "请选择 1, 2, or 3:"
 	read choice_ssl
 	case $choice_ssl in 
 		1 ) 	config_ssl_non_le $proxy_hostname_add $origin_ip_add
@@ -509,7 +509,7 @@ function add_reverse_proxy
 				;;
 		3 ) 	config_ssl_later
 				;;
-		* )		echo "Error!" 
+		* )		echo "错误!" 
 				exit 1
 				;;
 	esac
@@ -518,11 +518,11 @@ function add_reverse_proxy
 function add_cdn
 {
 	echo 
-	echo "Please specify your website domain name (e.g., example.com):"
+	echo "请输入您网站的域名（比如example.com）："
 	read cdn_hostname_add
-	echo "Please specify the origin website IP address (e.g., 88.88.88.88).  If it has multiple IPs, any would work:"
+	echo "请输入源站IP地址。如果源站有多个IP地址，可以填任意一个。"
 	read origin_ip_add
-	echo "Is the origin website using HTTPS or HTTP?  Type 1 for HTTPS, or 2 for HTTP.  If both works, then either is fine:"
+	echo "源站是否启用SSL？如果是HTTPS, 请输入1; 如果是HTTP, 请输入2."
 	read isHTTPS
 	if [ $isHTTPS = 1 ] ; then
 		cdn_port=443
@@ -533,15 +533,15 @@ function add_cdn
 	fi
 	echo 
 	echo "${cdn_hostname_add}		CDN		${origin_ip_add}:${cdn_port}" >> /etc/trafficserver/hostsavailable.sun
-	echo "Would you like to configure SSL certificates for domain name ${cdn_hostname_add} now?"
+	echo "您是否想要现在为${cdn_hostname_add}配置SSL证书？"
 	echo 
-	echo "We can set up SSL with your own certificates, or can issue a free Let's Encrypt SSL certificate for you, if you have already pointed your domain to this server."
-	echo "How would you like to proceed?"
+	echo "您可以提供您自己的证书；如果您已经将域名指向了该服务器的IP地址，您也可以一键生成免费的Let's Encrypt SSL证书。"
+	echo "请输入您的选项。"
 	echo 
-	echo "1: I know the absolute path to my certificate files (private key, certificate, CA chain (optional))."
-	echo "2: I have pointed my domain name to this server, and I want a free Let's Encrypt certificate."
-	echo "3: I forgot the path to my certificate files, so I need to go back to SSH and find them; or I do not need SSL certificate for this domain."
-	echo "Please select 1, 2, or 3:"
+	echo "1: 我知道我的证书文件的路径（私钥，证书，CA中间链证书（可选）），我想提供我自己的证书。"
+	echo "2: 我已经将我的域名指向了该服务器的IP, 我想生成免费的Let's Encrypt证书。"
+	echo "3: 我不记得证书文件放在哪儿了，得去找找；或者我暂时不想为该域名设置SSL."
+	echo "请选择 1, 2, or 3:"
 	read choice_ssl
 	case $choice_ssl in 
 		1 ) 	config_ssl_non_le $cdn_hostname_add $origin_ip_add
@@ -550,7 +550,7 @@ function add_cdn
 				;;
 		3 ) 	config_ssl_later
 				;;
-		* )		say "Error!" red
+		* )		say "错误!" red
 				exit 1
 				;;
 	esac
@@ -559,21 +559,21 @@ function add_cdn
 function config_ssl_selection
 {
 	# this function is only called from menu option 4.
-	echo "We can set up SSL with your own certificates, or can issue a free Let's Encrypt SSL certificate for you, if you have already pointed your domain to this server."
-	echo "How would you like to proceed?"
+	echo "您可以提供您自己的证书；如果您已经将域名指向了该服务器的IP地址，您也可以一键生成免费的Let's Encrypt SSL证书。"
+	echo "请输入您的选项。"
 	echo 
-	echo "1: I know the absolute path to my certificate files (private key, certificate, CA chain (optional))."
-	echo "2: I have pointed my domain name to this server, and I want a free Let's Encrypt certificate."
-	echo "3: I forgot the path to my certificate files, so I need to go back to SSH and find them; or I do not need SSL certificate for this domain."
-	echo "Please select 1, 2, or 3:"
+	echo "1: 我知道我的证书文件的路径（私钥，证书，CA中间链证书（可选）），我想提供我自己的证书。"
+	echo "2: 我已经将我的域名指向了该服务器的IP, 我想生成免费的Let's Encrypt证书。"
+	echo "3: 我不记得证书文件放在哪儿了，得去找找；或者我暂时不想为该域名设置SSL."
+	echo "请选择 1, 2, or 3:"
 	read choice_ssl
 	if [ $choice_ssl = 3 ] ; then
 		config_ssl_later
 	else
 		echo 
-		echo "Please specify your domain name (e.g., qing.su): "
+		echo "请输入您的域名（比如qing.su）: "
 		read ssl_hostname_add
-		echo "Please specify the origin server IP address (e.g., 88.88.88.88): "
+		echo "请输入源站IP地址： "
 		read ssl_ip_add
 		case $choice_ssl in 
 			1 ) 	config_ssl_non_le $ssl_hostname_add $ssl_ip_add
@@ -582,7 +582,7 @@ function config_ssl_selection
 					;;
 			3 ) 	config_ssl_later
 					;;
-			* )		say "Error!" red 
+			* )		say "错误!" red 
 					exit 1
 					;;
 		esac
@@ -592,11 +592,11 @@ function config_ssl_selection
 function config_ssl_later
 {
 	echo 
-	echo "No problem!  Please take your time and find your certificates."
-	echo "You can always run this script again and set up SSL certificates for your instances later."
-	echo "Simply choose Option 4 in the main menu."
+	echo "好的，您可以返回SSH查找您的证书文件地址。"
+	echo "您随时可以再次运行此脚本，为您的网站设置SSL证书。"
+	echo "只需在菜单中选择选项4即可。"
 	trafficserver restart
-	echo "Thank you for using this script!  Have a nice day!"
+	echo "感谢您使用此程序，祝您生活愉快!"
 	exit 0
 }
 	
@@ -615,19 +615,19 @@ function display_license
 function config_ssl_non_le
 {
 	echo 
-	echo "Please specify your private key file location (e.g., /etc/certs/qing.su.key): "
+	echo "请输入您的私钥地址 (e.g., /etc/certs/qing.su.key): "
 	read priv_key_file
-	echo "Please specify your certificate file location (e.g., /etc/certs/qing.su.crt): "
+	echo "请输入您的证书地址 (e.g., /etc/certs/qing.su.crt): "
 	read cert_file
-	echo "Is your certificate chained? (i.e., are CA-certficates already included in your certificate file?) [Y/N]:"
+	echo "该证书是否为全链（即CA中间链证书是否已包含在该证书中）？ [Y/N]:"
 	read is_chained
 	if [ "x${is_chained}" != "xY" ]
 	then
-		echo "Please specify your CA-certificates file location (e.g., /etc/certs/qing.su.ca-bundle): "
+		echo "请输入您的CA中间链证书地址 (e.g., /etc/certs/qing.su.ca-bundle): "
 		read ca_cert_file
 	fi
 	# $1 is hostname and $2 is IP
-	echo "Configuring SSL certificates for $2..."
+	echo "为$2配置SSL证书..."
 	cp $priv_key_file /etc/trafficserver/ssl/$1.key
 	cp $cert_file /etc/trafficserver/ssl/$1.crt
 	if [ -f /etc/trafficserver/ssl/$1.crt ] && [ -f /etc/trafficserver/ssl/$1.key ] ; then
@@ -637,17 +637,17 @@ function config_ssl_non_le
 			cp $ca_cert_file /etc/trafficserver/ssl/$1.ca.crt
 			echo "dest_ip=$2 ssl_cert_name=$1.crt ssl_key_name=$1.key ssl_ca_name=$1.ca.crt" >> /etc/trafficserver/ssl_multicert.config
 		fi
-		say @B"SSL certificates successfully configured." green
-		echo "Origin IP: $2"
-		echo "Private key file: /etc/trafficserver/ssl/$1.key"
-		echo "Certificate file: /etc/trafficserver/ssl/$1.crt"
+		say @B"SSL证书配置成功。" green
+		echo "源站IP: $2"
+		echo "私钥文件地址: /etc/trafficserver/ssl/$1.key"
+		echo "证书文件地址: /etc/trafficserver/ssl/$1.crt"
 		if [ "x${is_chained}" != "xY" ] ; then
-			echo "Intermediate certificate: /etc/trafficserver/ssl/$1.ca.crt"
+			echo "CA中间链证书地址: /etc/trafficserver/ssl/$1.ca.crt"
 		fi
 		echo 
 	else
-		say "SSL configuration failed!" red
-		echo "Please check the above log."
+		say "SSL配置失败！" red
+		echo "请检查上面的日志。"
 		echo 
 		exit 1
 	fi
@@ -661,11 +661,11 @@ function config_ssl_le
 	origin_ip=$2
 	hostname_le=$1
 	echo 
-	echo "Starting to issue free certificate from Let's Encrypt..."
-	echo "Please keep in mind that this feature is experimental..."
+	echo "开始用Let's Encrypt生成免费SSL证书。..."
+	echo "该功能仍在实验阶段，请您知悉。..."
 	echo 
-	echo "Stopping trafficserver..."
-	echo "Please input your e-mail address: "
+	echo "关闭Traffic Server..."
+	echo "请输入一个邮箱地址: "
 	read email_le
 	trafficserver stop
 	systemctl stop trafficserver
@@ -674,14 +674,14 @@ function config_ssl_le
 	cp /etc/letsencrypt/live/${hostname_le}/privkey.pem /etc/trafficserver/ssl/${hostname_le}.key
 	if [ -f /etc/trafficserver/ssl/${hostname_le}.key ] ; then
 		echo "dest_ip=${origin_ip} ssl_cert_name=${hostname_le}.crt ssl_key_name=${hostname_le}.key" >> /etc/trafficserver/ssl_multicert.config
-		say @B"SSL certificates successfully configured." green
-		echo "Origin IP: ${origin_ip}"
-		echo "Private key file: /etc/trafficserver/ssl/${hostname_le}.key"
-		echo "Certificate file: /etc/trafficserver/ssl/${hostname_le}.crt"
+		say @B"SSL证书配置成功。" green
+		echo "源站IP: ${origin_ip}"
+		echo "私钥文件地址: /etc/trafficserver/ssl/${hostname_le}.key"
+		echo "证书文件地址: /etc/trafficserver/ssl/${hostname_le}.crt"
 		echo 
 	else
-		say "Let's Encrypt SSL configuration failed!" red
-		echo "Please check the above log."
+		say "Let's Encrypt SSL配置失败！" red
+		echo "请检查上面的日志。"
 		echo
 		exit 1
 	fi
@@ -695,20 +695,20 @@ function config_ssl_le
 function display_config_locations
 {
 	echo 
-	echo "General configurations: /etc/trafficserver/records.config"
+	echo "通用配置: /etc/trafficserver/records.config"
 	echo "SSL: /etc/trafficserver/ssl_multicert.config"
-	echo "Mapping rules: /etc/trafficserver/remap.config"
-	echo "Cache rules: /etc/trafficserver/cache.config"
-	echo "Disk cache size: /etc/trafficserver/storage.config"
+	echo "映射规则: /etc/trafficserver/remap.config"
+	echo "缓存规则: /etc/trafficserver/cache.config"
+	echo "磁盘缓存配额: /etc/trafficserver/storage.config"
 	echo 
-	echo "Log files location: /usr/local/var/log/trafficserver"
+	echo "日志文件目录: /usr/local/var/log/trafficserver"
 	echo 
-	echo "For other configurations, check the official wiki:"
+	echo "其他配置请参考官方文档:"
 	echo "https://docs.trafficserver.apache.org/en/latest/admin-guide/files/records.config.en.html#configuration-variables"
 	echo 
-	echo "Do not forget to restart Traffic Server after modifying config files."
+	echo "如果您修改了配置信息，请重启Traffic Server."
 	echo "Simply run: \"trafficserver restart\""
-	echo "Thank you.  Press return key to continue."
+	echo "感谢。请按回车键返回主菜单。"
 	read catch_all_variable
 	echo 
 }
@@ -717,10 +717,10 @@ function view_stats
 {
 	cat /etc/trafficserver/hostsavailable.sun
 	echo 
-	echo "Please specify the website that you would like to check stats."
-	echo "Note: type in the Origin IP:Port of the origin website."
-	echo "For example, 88.88.88.88:443."
-	echo "Please specify:"
+	echo "请指明您想要查看统计数据的网站。"
+	echo "请仅输入该网站的源站IP:端口"
+	echo "比如88.88.88.88:443"
+	echo "请输入:"
 	read view_stats_host
 	traffic_logstats -o $view_stats_host
 	echo 
@@ -729,44 +729,44 @@ function view_stats
 function display_useful_commands
 {
 	echo 
-	echo "View Traffic Server stats: traffic_top"
-	echo "Start/stop/restart Traffic Server: trafficserver start/stop/restart"
-	echo "Check whether Traffic Server is running: trafficserver status"
-	echo "Decode via header: traffic_via '[xXxXxX]'"
-	echo "Reload Traffic Server config files: traffic_ctl config reload"
+	echo "查看Traffic Server状态统计: traffic_top"
+	echo "启动、停止、重启Traffic Server: trafficserver start/stop/restart"
+	echo "查看Traffic Server是否正在运行: trafficserver status"
+	echo "via信头信息解密: traffic_via '[xXxXxX]'"
+	echo "重新载入Traffic Server配置文件: traffic_ctl config reload"
 	echo 
-	echo "You can always run this script again to add a CDN website, configure SSL certificates, check stats, etc."
+	echo "您可以随时再次运行本程序，添加CDN网站，配置SSL，检查统计数据等。"
 	echo 
-	echo "Press return key to continue."
+	echo "请按回车键继续。"
 	read catch_all_variable
 }
 
 function enable_header_rewriter
 {
 	echo
-	echo "Setting up header rewriter..."
+	echo "配置header修改器..."
 	echo "header_rewrite.so /etc/trafficserver/header_rewrite.config" > /etc/trafficserver/plugin.config
 	touch /etc/trafficserver/header_rewrite.config
-	say @B"Header rewriter plugin enabled!" green
+	say @B"header修改器已启用" green
 	echo 
 }
 
 function enable_CORS
 {
 	echo
-	echo "Setting up cross-origin resource sharing headers..."
+	echo "设置CORS信头..."
 	echo "rm-header Access-Control-Allow-Origin *" >> /etc/trafficserver/header_rewrite.config
 	echo "add-header Access-Control-Allow-Origin *" >> /etc/trafficserver/header_rewrite.config
-	say @B"CORS header added!" green
+	say @B"CORS信头已添加！" green
 	echo 
 }
 
 function customize_server_header
 {
 	echo 
-	echo "How would you like your server to be called?"
+	echo "请给这台服务器取名。"
 	read cdn_server_header
-	echo "OK.  Setting server header now..."
+	echo "好的，正在设置server信头字段..."
 	echo "cond %\{SEND_RESPONSE_HDR_HOOK\} [AND]" >> /etc/trafficserver/header_rewrite.config
 	echo "cond %{HEADER:server} =ATS/${TS_VERSION}" >> /etc/trafficserver/header_rewrite.config
 	echo "set-header server \"${cdn_server_header}\"" >> /etc/trafficserver/header_rewrite.config
@@ -777,12 +777,12 @@ function customize_server_header
 function clear_all_cache
 {
 	echo 
-	echo "Stopping Traffic Server..."
+	echo "停止 Traffic Server..."
 	trafficserver stop
-	echo "Purging all cache..."
+	echo "正在清除全部缓存..."
 	traffic_server -Cclear
-	say @B"Cache purged successfully." green
-	echo "Starting Traffic Server..."
+	say @B"成功清除全部缓存。" green
+	echo "启用 Traffic Server..."
 	trafficserver start
 	echo 
 }
@@ -790,8 +790,8 @@ function clear_all_cache
 function purge_single_object
 {
 	echo 
-	echo "Please input the URL to the object that you'd like to purge from cache."
-	say @B"Please INCLUDE \"http://\" or \"https://\"." yellow
+	echo "请输入您想要移出缓存的对象的URL."
+	say @B"请包含 \"http://\" or \"https://\"." yellow
 	echo 
 	read purge_object_url
 	read purge_object_domain_name <<< $(echo "$purge_object_url" | awk -F/ '{print $3}')
@@ -805,16 +805,16 @@ function purge_single_object
 			purge_object_result=$(curl -vX PURGE --resolve ${purge_object_domain_name}:443:127.0.0.1 ${purge_object_url} 2>&1 | grep " 200")
 		fi
 		if [ -n "$purge_object_result" ] ; then
-			say @B"Object ${purge_object_url} successfully purged from cache!" green
+			say @B"对象${purge_object_url}成功移除出缓存。" green
 		else
-			say "Purging ${purge_object_url} failed." red
-			say "Object not exist or already purged from cache." red
+			say "移除${purge_object_url}失败。" red
+			say "该对象不存在，或已经移出缓存。" red
 		fi
 	else
-		say "Error!" red
-		say "Domain name $purge_object_domain_name does not exist on this server." red
+		say "错误!" red
+		say "域名${purge_object_domain_name}不存在" red
 	fi
-	echo "Press enter to return to the main menu."
+	echo "请按回车键返回主菜单。"
 	read catch_all_variable
 	echo 
 }
@@ -822,9 +822,9 @@ function purge_single_object
 function purge_list_of_objects
 {
 	echo 
-	echo "You are about to purge a list of objects from cache."
-	say @B"Please specify the absolute path to the file containing the URL of objects." yellow
-	echo "One URL per line. Please include \"http://\" or \"https://\"."
+	echo "您将从缓存中移除一列对象。"
+	say @B"请输入储存这些对象URL的列表文件的绝对路径。" yellow
+	echo "一条URL一行。请包含 \"http://\" or \"https://\"."
 	read purge_object_list_file
 	echo 
 	if [ -f $purge_object_list_file ] ; then
@@ -855,14 +855,14 @@ function purge_list_of_objects
 				say "PURGE        WRONG DOMAIN   ${line}" red >> $purge_object_list_result_file
 			fi
 		done < $purge_object_list_file
-		say @B"Completed!" green
-		say @B"Purging results have been saved to ${purge_object_list_result_file}." green
-		say @B"You can use \"cat ${purge_object_list_result_file}\" to display the result file." green
+		say @B"已完成！" green
+		say @B"移除缓存结果已储存至${purge_object_list_result_file}。" green
+		say @B"您可以使用 \"cat ${purge_object_list_result_file}\" 来读取结果文件。" green
 	else
-		say "The file you specified does not exist." red
-		say "Please check." red
+		say "您输入的文件不存在。" red
+		say "请核查。" red
 	fi
-	echo "Press enter to return to the main menu."
+	echo "请按回车键返回主菜单。"
 	read catch_all_variable
 	echo 
 }
@@ -871,7 +871,7 @@ function push_single_object
 {
 	echo 
 	echo "Please input the URL to the object that you'd like to push into cache."
-	say @B"Please INCLUDE \"http://\" or \"https://\"." yellow
+	say @B"请包含 \"http://\" or \"https://\"." yellow
 	echo 
 	read push_object_url
 	read push_object_domain_name <<< $(echo "$push_object_url" | awk -F/ '{print $3}')
@@ -890,10 +890,10 @@ function push_single_object
 			rm -f temp
 		fi
 	else
-		say "Error!" red
+		say "错误!" red
 		say "Domain name $push_object_domain_name does not exist on this server." red
 	fi
-	echo "Press enter to return to the main menu."
+	echo "请按回车键返回主菜单。"
 	read catch_all_variable
 	echo 
 }
@@ -902,8 +902,8 @@ function push_list_of_objects
 {
 	echo 
 	echo "You are about to push a list of objects into cache."
-	say @B"Please specify the absolute path to the file containing the URL of objects." yellow
-	echo "One URL per line. Please include \"http://\" or \"https://\"."
+	say @B"请输入储存这些对象URL的列表文件的绝对路径。" yellow
+	echo "一条URL一行。请包含 \"http://\" or \"https://\"."
 	read push_object_list_file
 	echo 
 	if [ -f $push_object_list_file ] ; then
@@ -933,14 +933,14 @@ function push_list_of_objects
 				say "PUSH        WRONG DOMAIN   ${line}" red >> $push_object_list_result_file
 			fi
 		done < $push_object_list_file
-		say @B"Completed!" green
+		say @B"已完成！" green
 		say @B"Pushing results have been saved to ${push_object_list_result_file}." green
-		say @B"You can use \"cat ${push_object_list_result_file}\" to display the result file." green
+		say @B"您可以使用 \"cat ${push_object_list_result_file}\" 来读取结果文件。" green
 	else
-		say "The file you specified does not exist." red
-		say "Please check." red
+		say "您输入的文件不存在。" red
+		say "请核查。" red
 	fi
-	echo "Press enter to return to the main menu."
+	echo "请按回车键返回主菜单。"
 	read catch_all_variable
 	echo 
 }
@@ -948,17 +948,17 @@ function push_list_of_objects
 function advanced_cache_control
 {
 	echo 
-	echo "This submenu allows you to add/remove objects to/from cache."
+	echo "该子菜单可以让您向缓存中添加或者从缓存中移除对象。"
 	while [ $key != 0 ] ; do
 		echo 
-		say @B"Advanced cache control." cyan
-		echo "1 - Purge all cache."
-		echo "2 - Remove a single object from cache."
-		echo "3 - Remove a list of objects from cache."
-#		echo "4 - Push a single object into cache. (experimental)"
-#		echo "5 - Push a list of objects into cache. (experimental)"
-		echo "0 - Return to main menu."
-		echo "Please select 1/2/3/4/5/0: "
+		say @B"高级缓存控制选项" cyan
+		echo "1 - 清除全部缓存"
+		echo "2 - 从缓存中移除一个对象。"
+		echo "3 - 从缓存中移除一列对象。"
+#		echo "4 - 向缓存中推送一个对象（实验性功能）。"
+#		echo "5 - 向缓存中推送一列对象（实验性功能）。"
+		echo "0 - 返回主菜单"
+		echo "请选择 1/2/3/4/5/0: "
 		read cache_menu_key
 		case $cache_menu_key in 
 			1 ) 		clear_all_cache
@@ -981,79 +981,79 @@ function advanced_cache_control
 function change_cdn_ip
 {
 	echo
-	echo "Please tell me your old Origin server IP.  No domain name required."
+	echo "请输入旧的源站IP. 无需输入域名。"
 	read old_ip
-	echo "OK.  Then tell me your new Origin server IP.  No domain name required."
+	echo "请输入新的源站IP. 无需输入域名。"
 	read new_ip
 	sed -i "s/$old_ip/$new_ip/g" /etc/trafficserver/hostsavailable.sun
 	sed -i "s/$old_ip/$new_ip/g" /etc/trafficserver/ssl_multicert.config
 	sed -i "s/$old_ip/$new_ip/g" /etc/trafficserver/remap.config
-	say @B"IP changed from ${old_ip} to ${new_ip}" green
+	say @B"IP地址已从${old_ip} 更新至 ${new_ip}" green
 	echo 
 }
 
 function reconfigure_traffic_server
 {
 	echo 
-	echo "Are you sure to reconfigure Traffic Server?"
-	echo "All previous configurations will be cleared."
-	echo "Mapping rules and SSL certificate settings will be kept."
-	say "Would you like to continue? [Y/N]" yellow blue
+	echo "您确认要重新配置Traffic Server吗？"
+	echo "之前的配置信息将全部被清除。"
+	echo "映射规则与SSL证书信息将会被保留。"
+	say "您是否要继续？ [Y/N]" yellow blue
 	read do_reconfigure_ts
 	if [ "x$do_reconfigure_ts" = "xY" ] ; then
 		echo 
-		echo "Configuring Traffic Server..."
+		echo "配置Traffic Server..."
 		config_main_records
 		echo 
-		echo "Would you like to configure cache rules automatically? [Y/N]"
+		echo "您是否要设置默认的缓存规则？ [Y/N]"
 		read do_config_cache_rules
 		if [ "x$do_config_cache_rules" = "xY" ] || [ "x$do_config_cache_rules" = "xy" ] ; then
-			echo "Configuring cache rules..."
+			echo "配置缓存规则..."
 			config_cache_rules
-			say @B"Cache rules configured successfully." green
+			say @B"成功配置缓存规则。" green
 		else
 			echo "You can configure cache rules manually at /etc/trafficserver/cache.config.  Make sure to run \"trafficserver restart\" after changing the cache rules."
 		fi
 		echo 
-		echo "Configuring cache size..."
+		echo "配置缓存大小..."
 		config_cache_storage
 		rm -f /etc/trafficserver/volume.config
 		config_cache_partitioning
 		rm -f /etc/trafficserver/header_rewrite.config
 		enable_header_rewriter
-		echo "Would you like Traffic Server to cache dynamic content? [Y/N]"
+		echo "您是否想让Traffic Server缓存动态内容？ [Y/N]"
 		read do_cache_dynamic_content
 		if [ "x$do_cache_dynamic_content" = "xY" ] || [ "x$do_cache_dynamic_content" = "xy" ] ; then
-			echo "Updating cache rules..."
+			echo "更新缓存规则..."
 			config_cache_dynamic_content
 		else
-			say @B"Traffic Server will not cache dynamic content!" yellow
+			say @B"Traffic Server将不缓存动态内容。" yellow
 			echo 
 		fi
 		echo "Would you like to enable \"Access-Control-Allow-Origin\" header (CORS)?"
-		echo "Please choose Y if you have no idea what it is. [Y/N]"
+		echo "如果您不知道这是什么，请选择Y. [Y/N]"
 		read do_enable_CORS
 		if [ "x$do_enable_CORS" = "xY" ] || [ "x$do_enable_CORS" = "xy" ] ; then
 			enable_CORS
 		else
-			say @B"CORS not configured." yellow
+			say @B"CORS未启用。" yellow
 			echo 
 		fi
 		echo "The \"server\" header can be a short phrase, like \"shc-cdn-server 1.0.0\", or \"Traffic Server 8.0.8\"."
 		echo "If you do not change it, the default value is \"ATS/${TS_VERSION}\""
-		echo "Would you like to change it? [Y/N]"
+		echo "您想要更改吗？ [Y/N]"
 		read do_change_server_header
 		if [ "x$do_change_server_header" = "xY" ] || [ "x$do_change_server_header" = "xy" ] ; then
 			customize_server_header
 		else
-			say @B"Server header tag value not changed." yellow
+			say @B"Server信头字段未更改。" yellow
 			echo 
 		fi
-		say @B"Configuration successfully finished!" green
+		say @B"配置成功！" green
 		echo 
 	else
 		echo 
-		say @B"Traffic Server not reconfigured." yellow
+		say @B"Traffic Server 未重新配置。" yellow
 		echo 
 	fi
 }
@@ -1061,22 +1061,22 @@ function reconfigure_traffic_server
 function renew_le_certificate
 {
 	echo 
-	echo "What is the domain name that you wish to renew Let's Encrypt certificate?"
+	echo "请输入您要续期Let's Encrypt证书的域名。"
 	read renew_le_domain
-	echo "OK.  Stopping Traffic Server..."
+	echo "OK.  停止 Traffic Server..."
 	trafficserver stop
 	systemctl stop trafficserver
 	echo 
-	echo "Renewing SSL certificate for ${renew_le_domain}..."
+	echo "正在为${renew_le_domain}续期SSL证书..."
 	echo 
 	certbot certonly --standalone --agree-tos -d $renew_le_domain
 	cp -f /etc/letsencrypt/live/${renew_le_domain}/fullchain.pem /etc/trafficserver/ssl/${renew_le_domain}.crt
 	cp -f /etc/letsencrypt/live/${renew_le_domain}/privkey.pem /etc/trafficserver/ssl/${renew_le_domain}.key
 	chown -R nobody /etc/trafficserver/ssl/
 	chmod -R 0760 /etc/trafficserver/ssl/
-	say @B"SSL certificate for ${renew_le_domain} successfully renewed." green
+	say @B"域名${renew_le_domain}的SSL证书已成功续期。" green
 	echo 
-	echo "Starting Traffic Server..."
+	echo "启用 Traffic Server..."
 	systemctl start trafficserver
 	trafficserver start
 	echo 
@@ -1087,18 +1087,18 @@ function remove_cdn_website
 	echo
 	cat /etc/trafficserver/hostsavailable.sun
 	echo
-	echo "Please specify the domain name of the website that you would like to remove."
-	echo "Do NOT include \"http\" or \"https\"."
+	echo "请输入您想要移除的网站。"
+	echo "不要包含 \"http\" or \"https\"."
 	echo 
 	read website_to_be_deleted
 	echo 
-	echo "You are about to delete website ${website_to_be_deleted} from this CDN server."
-	echo "Please note that all configurations, as well as SSL certificate files associated with this domain name will be removed."
-	say "Are you sure to continue? [Y/N]" yellow blue
+	echo "您将从该CDN服务器中移除网站${website_to_be_deleted}。"
+	echo "所有关于该网站的配置信息与SSL证书将被移除。"
+	say "请问是否继续？ [Y/N]" yellow blue
 	read ready_to_be_deleted
 	if [ "x$ready_to_be_deleted" = "xY" ] || [ "x$ready_to_be_deleted" = "xy" ] ; then
 		echo 
-		echo "Removing website from server..."
+		echo "从服务器中移除网站..."
 		delete_line_in_file $website_to_be_deleted /etc/trafficserver/hostsavailable.sun
 		delete_line_in_file $website_to_be_deleted /etc/trafficserver/remap.config
 		delete_line_in_file $website_to_be_deleted /etc/trafficserver/ssl_multicert.config
@@ -1108,14 +1108,14 @@ function remove_cdn_website
 			rm -f /etc/trafficserver/ssl/${website_to_be_deleted}.ca.crt
 		fi
 		echo 
-		say @B"Website removed!" green
-		echo "Restarting Traffic Server..."
+		say @B"网站移除成功！" green
+		echo "重启 Traffic Server..."
 		echo 
 		trafficserver restart
 		echo 
 	else
 		echo 
-		say @B"Website not removed!" yellow
+		say @B"网站未移除。" yellow
 		echo 
 	fi
 }
@@ -1124,14 +1124,14 @@ function say_goodbye
 {
 	echo 
 	if [ $restart_switch = 1 ] ; then
-		echo "Restarting Traffic Server now..."
+		echo "正在重启Traffic Server..."
 		trafficserver restart
 	fi
 	echo 
-	echo "Thank you for using this script written by https://qing.su"
-	echo "You can always run this script again to add a CDN website, configure SSL certificates, list current websites, check stats, etc."
+	echo "感谢您使用此脚本。此脚本作者为 https://qing.su"
+	echo "您可以随时再次运行此脚本，从而添加CDN网站，配置SSL证书，管理网站，查看统计，管理缓存等。"
 	echo 
-	echo "Bye!  Have a nice day."
+	echo "再见，祝您生活愉快!"
 	echo 
 	key=0
 }
@@ -1216,23 +1216,23 @@ function main
 		check_OS
 	fi
 	echo 
-	say @B"Your OS is $OS" green
+	say @B"您的操作系统是 $OS" green
 	echo 
-	echo "Checking Traffic Server installation..."
+	echo "检查Traffic Server安装状态..."
 	check_TS
 	if [ $TS_INSTALLED = 0 ] ; then
 		echo 
-		say @B"Traffic Server not installed.  Would you like to install it now?" yellow
+		say @B"Traffic Server未安装。您是否想要现在安装？" yellow
 		echo 
-		echo "Depending on your server specs, you may or may not need to add some SWAP before you proceed."
-		echo "This script needs 1500 MB of RAM for the first time to build from source.  It runs perfectly on a 512 MB VPS once it finishes the installation."
-		echo "If you think you don't have enough RAM now, please quit, add more SWAP, and run this script again."
+		echo "您需要自行决定是否添加SWAP."
+		echo "本程序首次编译安装需要1500MB内存。安装完毕后，此程序可以在512MB内存的服务器上完美运行。"
+		echo "如果您的服务器内存不足，您可以现在退出程序，添加SWAP缓存，然后重新运行此脚本。"
 		echo 
-		say "Please indicate if you would like to install now: (Y/N)" yellow blue
+		say "请确认是否现在开始安装: (Y/N)" yellow blue
 		read install_or_not
 		if [ "x$install_or_not" != "xY" ] && [ "x$install_or_not" != "xy" ] ; then
 			echo 
-			say "Aborted!" red
+			say "已中止！" red
 			echo 
 			exit 0
 		fi
@@ -1242,80 +1242,80 @@ function main
 			install_TS
 		fi
 		echo 
-		echo "Configuring Traffic Server..."
+		echo "配置Traffic Server..."
 		config_main_records
 		echo 
-		echo "Would you like to configure cache rules automatically? [Y/N]"
+		echo "您是否要设置默认的缓存规则？ [Y/N]"
 		read do_config_cache_rules
 		if [ "x$do_config_cache_rules" = "xY" ] || [ "x$do_config_cache_rules" = "xy" ] ; then
-			echo "Configuring cache rules..."
+			echo "配置缓存规则..."
 			config_cache_rules
-			say @B"Cache rules configured successfully." green
+			say @B"成功配置缓存规则。" green
 		else
 			echo "You can configure cache rules manually at /etc/trafficserver/cache.config.  Make sure to run \"trafficserver restart\" after changing the cache rules."
 		fi
 		echo 
-		echo "Configuring cache size..."
+		echo "配置缓存大小..."
 		config_cache_storage
 		config_cache_partitioning
 		enable_header_rewriter
-		echo "Would you like Traffic Server to cache dynamic content? [Y/N]"
+		echo "您是否想让Traffic Server缓存动态内容？ [Y/N]"
 		read do_cache_dynamic_content
 		if [ "x$do_cache_dynamic_content" = "xY" ] || [ "x$do_cache_dynamic_content" = "xy" ] ; then
-			echo "Updating cache rules..."
+			echo "更新缓存规则..."
 			config_cache_dynamic_content
 		else
-			say @B"Traffic Server will not cache dynamic content!" yellow
+			say @B"Traffic Server将不缓存动态内容。" yellow
 			echo 
 		fi
 		echo "Would you like to enable \"Access-Control-Allow-Origin\" header (CORS)?"
-		echo "Please choose Y if you have no idea what it is. [Y/N]"
+		echo "如果您不知道这是什么，请选择Y. [Y/N]"
 		read do_enable_CORS
 		if [ "x$do_enable_CORS" = "xY" ] || [ "x$do_enable_CORS" = "xy" ] ; then
 			enable_CORS
 		else
-			say @B"CORS not configured." yellow
+			say @B"CORS未启用。" yellow
 			echo 
 		fi
 		echo "The \"server\" header can be a short phrase, like \"shc-cdn-server 1.0.0\", or \"Traffic Server 8.0.8\"."
 		echo "If you do not change it, the default value is \"ATS/${TS_VERSION}\""
-		echo "Would you like to change it? [Y/N]"
+		echo "您想要更改吗？ [Y/N]"
 		read do_change_server_header
 		if [ "x$do_change_server_header" = "xY" ] || [ "x$do_change_server_header" = "xy" ] ; then
 			customize_server_header
 		else
-			say @B"Server header tag value not changed." yellow
+			say @B"Server信头字段未更改。" yellow
 			echo 
 		fi
-		say @B"Configuration successfully finished!" green
-		echo "Please proceed to the next step and add your first CDN website."
+		say @B"配置成功！" green
+		echo "请开始下一步，添加第一个CDN网站。"
 		restart_switch=1
 		echo 
 	else
 		echo 
-		say @B"Traffic Server installed and running!" green
+		say @B"Traffic Server 已安装且正在运行！" green
 		restart_switch=0
 		echo 
 	fi
 	key=1
 	while [ $key != 0 ] ; do
 		echo 
-		say @B"How can I help you today?" cyan
+		say @B"请问您需要什么帮助呢？" cyan
 		echo 
-		echo "1 - List all current CDN websites."
-		echo "2 - Advanced cache control."
-		echo "3 - Add a CDN website."
-		echo "4 - Configure SSL for a website."
-		echo "5 - Locate configuration and log files."
-		echo "6 - View stats of a website."
-		echo "7 - List useful commands."
-		echo "8 - Display author information."
-		echo "11 - Change IP address of a website."
-		echo "12 - Remove a CDN website."
-		echo "13 - Reconfigure Traffic Server."
-		echo "14 - Renew Let's Encrypt certificates."
-		echo "0 - Save all changes and quit this script."
-		echo "Please select 1/2/3/4/5/6/7/8/11/12/13/14/0: "
+		echo "1 - 列出当前所有CDN网站。"
+		echo "2 - 高级缓存控制选项"
+		echo "3 - 添加一个CDN网站。"
+		echo "4 - 为网站配置SSL."
+		echo "5 - 显示配置文件与日志文件路径。"
+		echo "6 - 查看网站统计数据。"
+		echo "7 - 列出常用命令。"
+		echo "8 - 显示作者信息。"
+		echo "11 - 更改网站IP地址。"
+		echo "12 - 移除一个CDN网站。"
+		echo "13 - 重新配置 Traffic Server."
+		echo "14 - 续期Let's Encrypt证书"
+		echo "0 - 保存所有修改并退出此脚本。"
+		echo "请选择 1/2/3/4/5/6/7/8/11/12/13/14/0: "
 		read key
 		case $key in 
 			1 ) 		echo 
